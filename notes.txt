@@ -1,0 +1,2 @@
+-The structure of flask would basically be creating an 
+app route after that we would create a function 
