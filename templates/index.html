@@ -1,15 +1,19 @@
-<h1>Hello World</h1>
-<p>This is my second webpage by </p>
-<p>Name {{ first_name }}</p>
-<p> {{ stuff|striptags }}</p>
-<h3> Favourite Pizza: </h3>
+{% extends 'base.html' %}
 
-{% for topping in favourite_pizza %}
-    {%if topping == 41 %}
-        {{ topping + 100}} <br/>
+{% block content %}
+    <h1>Hello World</h1>
+    <p>This is my second webpage by </p>
+    <p>Name {{ first_name }}</p>
+    <p> {{ stuff|striptags }}</p>
+    <h3> Favourite Pizza: </h3>
 
-    {% else %}
-        {{ topping }} <br/>
-    {% endif %}  
- 
+    {% for topping in favourite_pizza %}
+        {%if topping == 41 %}
+            {{ topping + 100}} <br/>
+
+        {% else %}
+            {{ topping }} <br/>
+        {% endif %}  
+    
 {% endfor %}
+{% endblock %}
