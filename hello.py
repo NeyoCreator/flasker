@@ -46,7 +46,6 @@ class Users(db.Model):
 
     def verify_password(self,password):
         return check_password_hash(self.password_hash,password)
-
     
     #Create A String
     def __rep__(self):
@@ -61,12 +60,10 @@ class UserForm(FlaskForm):
     password_hash2=PasswordField("Confirm Paword",validators=[DataRequired()])
     submit = SubmitField("submit")
     
-
-#Create a Form Class
+#Form Class
 class NamerForm(FlaskForm):
     name=StringField("Whats your name",validators=[DataRequired()])
     submit=SubmitField("Submit")
-
 
 #Delete Database Record
 @app.route('/delete/<int:id>')
@@ -81,7 +78,7 @@ def delete(id):
         our_users = Users.query.order_by(Users.date_added)
         return render_template("add_user.html",form=form,name=name,our_users= our_users)
     except:
-        flask("There was a problem deleting user")
+        flash("There was a problem deleting user")
         our_users = Users.query.order_by(Users.date_added)
         return render_template("add_user.html",form=form,name=name,our_users= our_users)
         
@@ -103,8 +100,7 @@ def update(id):
             return render_template('update.html',form=form,name_to_update=name_to_update,id=id)
     else:
         return render_template('update.html',form=form,name_to_update=name_to_update,id=id)
-        
-
+    
 
 #Create a route Decorator
 @app.route('/')
