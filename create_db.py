@@ -1,3 +1,4 @@
+#This file focuses on creating the mysql database
 import mysql.connector
 
 mydb = mysql.connector.connect(
@@ -8,7 +9,7 @@ mydb = mysql.connector.connect(
 )
 
 my_cursor = mydb.cursor()
-my_cursor.execute("CREATE DATABASE our_users")
+#my_cursor.execute("CREATE DATABASE new_users")
 my_cursor.execute("SHOW DATABASES")
 
 for db in my_cursor:
