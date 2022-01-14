@@ -1,13 +1,14 @@
 from enum import unique
 from flask import Flask,render_template,flash,request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField,PasswordField, BooleanField, ValidationError
 from wtforms import validators
-from  wtforms.validators import DataRequired
+from  wtforms.validators import DataRequired, EqualTo, Length
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 # Create a Flask Intsance
 app = Flask(__name__)
@@ -56,6 +57,8 @@ class UserForm(FlaskForm):
     name=StringField("Name",validators=[DataRequired()])
     email=StringField("E-mail",validators=[DataRequired()])
     favourite_color=StringField("Favourite color")
+    password_hash=PasswordField("Password", validators=[DataRequired(),EqualTo("password_hash2",message="Passwords Must Match!")])
+    password_hash2=PasswordField("Confirm Paword",validators=[DataRequired()])
     submit = SubmitField("submit")
     
 
@@ -124,14 +127,16 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()  
         if user is None:
-            user = Users(name=form.name.data, email=form.email.data,favourite_color=form.favourite_color.data) 
+            #Hash the password!
+            hashed_pw=generate_password_hash(form.password_hash.data, "sha256")
+            user = Users(name=form.name.data, email=form.email.data,favourite_color=form.favourite_color.data,password_hash=hashed_pw) 
             db.session.add(user)
             db.session.commit()
-
         name = form.name.data
         form.name.data=''
         form.email.data=''
         form.favourite_color.data=''
+        form.password_hash.data=''
         flash("User added successfully")
     our_users = Users.query.order_by(Users.date_added)
     return render_template("add_user.html",form=form,name=name,our_users= our_users)
