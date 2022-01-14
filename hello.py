@@ -1,3 +1,4 @@
+#Imports
 from enum import unique
 from flask import Flask,render_template,flash,request
 from flask_wtf import FlaskForm
@@ -16,24 +17,24 @@ app = Flask(__name__)
 #Add to database SQLITE
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'\
 
-#MySql
+#MySql Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:BOSS97kills!@localhost/new_users'
 
-#Secrete Key!
+#Secrete Key
 app.config['SECRET_KEY'] = 'any secret string'
 
-#Initilise the database
+#Initilise Database
 db = SQLAlchemy(app)
 migrate=Migrate(app,db)
 
-#Create a model
+#User Model
 class Users(db.Model):
     id =  db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(200), nullable = False)
     email = db.Column(db.String(120), nullable = False, unique=True)
     favourite_color=db.Column(db.String(120))
     date_added = db.Column(db.DateTime, default= datetime.utcnow)
-    #password
+    #Password
     password_hash=db.Column(db.String(128))
 
     @property
@@ -47,12 +48,10 @@ class Users(db.Model):
     def verify_password(self,password):
         return check_password_hash(self.password_hash,password)
 
-    
-    #Create A String
     def __rep__(self):
         return '<Name %r>' % self.name
 
-#Create a Form Class
+#User Form
 class UserForm(FlaskForm):
     name=StringField("Name",validators=[DataRequired()])
     email=StringField("E-mail",validators=[DataRequired()])
@@ -60,9 +59,14 @@ class UserForm(FlaskForm):
     password_hash=PasswordField("Password", validators=[DataRequired(),EqualTo("password_hash2",message="Passwords Must Match!")])
     password_hash2=PasswordField("Confirm Paword",validators=[DataRequired()])
     submit = SubmitField("submit")
-    
 
-#Create a Form Class
+#Password Form
+class PasswordForm(FlaskForm):
+    email=StringField("Whats your email?",validators=[DataRequired()])
+    password_hash=PasswordField("Whats your password?",validators=[DataRequired()])
+    submit=SubmitField("Submit")
+    
+#Namer Form
 class NamerForm(FlaskForm):
     name=StringField("Whats your name",validators=[DataRequired()])
     submit=SubmitField("Submit")
@@ -106,7 +110,7 @@ def update(id):
         
 
 
-#Create a route Decorator
+#Home Page
 @app.route('/')
 def index():
     first_name = 'Neo'
@@ -119,7 +123,7 @@ def index():
     favourite_pizza = favourite_pizza
     )
 
-#adding a user
+#Add User
 @app.route('/user/add',methods=['GET','POST'])
 def add_user():
     name = None
@@ -141,44 +145,62 @@ def add_user():
     our_users = Users.query.order_by(Users.date_added)
     return render_template("add_user.html",form=form,name=name,our_users= our_users)
 
+#User
 @app.route('/user/<name>')
 def user(name):
     return render_template('user.html', name =name )
-    #second commit
 
-#Bank_statement
+#Bank Satement
 @app.route('/bank')
 def bank():
     return render_template('bank_statement.html')
-
-#Create custom error pages
 
 #Invalid URL 
 @app.errorhandler(404) 
 def page_not_found(e):
     return render_template("404.html"),404
 
-
-#Internal Servererro 
+#Internal Servererror
 @app.errorhandler(500)
 def page_not_found(e):
     return render_template("500.html"),500
 
-#Create  a Name Page
+#Password Test Page
+@app.route('/test_pw',methods=['GET','POST'])
+def test_pw():
+    email=None
+    password=None
+    pw_to_check=None
+    passed=None
+    form = PasswordForm()
+
+    #Validate Form
+    if form.validate_on_submit():
+        email=form.email.data
+        password=form.password_hash.data
+        form.email.data= ''
+        form.password_hash.data=''
+
+        #Look Up User
+        pw_to_check= Users.query.filter_by(email=email).first()
+
+        #Check Hashed Password
+        passed = check_password_hash(pw_to_check.password_hash,password)
+
+    return render_template('test_pw.html',email=email,password=password,pw_to_check=pw_to_check,passed=passed,form=form)
+
+#Name Page
 @app.route('/name',methods=['GET','POST'])
 def name():
     name = None
     form = NamerForm()
 
-    # Validate Form
+    #Validate Form
     if form.validate_on_submit():
         name = form.name.data
         flash(form.name.data +" your name has been submited Succefully!")
         form.name.data= ''
- 
-    return render_template('name.html',
-    name = name,
-    form = form)
+    return render_template('name.html',name = name,form = form)
 
     
 
