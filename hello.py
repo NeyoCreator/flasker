@@ -90,7 +90,6 @@ def update(id):
     if request.method == "POST":
         name_to_update.name=request.form['name']
         name_to_update.email=request.form['email']
-        name_to_update.favourite_color=request.form['favourite_color']
         try :
             db.session.commit()
             flash("User updated succesfully")
