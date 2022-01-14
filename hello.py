@@ -1,5 +1,10 @@
 #Imports
+from crypt import methods
+from email import contentmanager
+from email.policy import default
 from enum import unique
+from tkinter import Widget
+from turtle import title
 from flask import Flask,render_template,flash,request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField,PasswordField, BooleanField, ValidationError
@@ -9,9 +14,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date   
+from wtforms.widgets import TextArea
 
 
-# Create a Flask Intsance
+#Flask Intsance
 app = Flask(__name__)
 
 #Add to database SQLITE
@@ -27,6 +34,21 @@ app.config['SECRET_KEY'] = 'any secret string'
 db = SQLAlchemy(app)
 migrate=Migrate(app,db)
 
+#JSON
+@app.route('/date')
+def get_current_date():
+    user_info = {"name":"tabiso","rooms":2,"location":"mamelodi"}
+    return user_info
+
+#Blog Post Model
+class Post(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    title=db.Column(db.String(255))
+    content=db.Column(db.Text)
+    author=db.Column(db.String(255))
+    date_posted=db.Column(db.DateTime,default=datetime.utcnow)
+    slug=db.Column(db.String(255))
+
 #User Model
 class Users(db.Model):
     id =  db.Column(db.Integer, primary_key = True)
@@ -34,9 +56,9 @@ class Users(db.Model):
     email = db.Column(db.String(120), nullable = False, unique=True)
     favourite_color=db.Column(db.String(120))
     date_added = db.Column(db.DateTime, default= datetime.utcnow)
+   
     #Password
     password_hash=db.Column(db.String(128))
-
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute!')
@@ -50,6 +72,14 @@ class Users(db.Model):
 
     def __rep__(self):
         return '<Name %r>' % self.name
+
+#Post Form
+class PostForm(FlaskForm):
+    title=StringField("Title",validators=[DataRequired()])
+    content=StringField("Content",validators=[DataRequired()],widget=TextArea())
+    author=StringField("Author",validators=[DataRequired()])
+    slug=StringField("Slug",validators=[DataRequired()])
+    submit=StringField("Submit",validators=[DataRequired()])
 
 #User Form
 class UserForm(FlaskForm):
@@ -70,6 +100,24 @@ class PasswordForm(FlaskForm):
 class NamerForm(FlaskForm):
     name=StringField("Whats your name",validators=[DataRequired()])
     submit=SubmitField("Submit")
+
+#Post Page
+@app.route('/add-post',methods=["GET","POST"])
+def add_post():
+    form=PostForm()
+    if form.validate_on_submit():
+        post=Post(title=form.title.data,content=form.content.data,slug=form.slug.data)
+        #Clear Form
+        form.title.data=""
+        form.content.data=""
+        form.author.data=""
+        form.slug.data=""
+
+        #Add Post Database
+        db.session.add(post)
+        db.session.commmit()
+        flash("Blog post submitted successfully")
+    return render_template("add_post.html",form=form)
 
 
 #Delete Database Record
@@ -108,8 +156,6 @@ def update(id):
     else:
         return render_template('update.html',form=form,name_to_update=name_to_update,id=id)
         
-
-
 #Home Page
 @app.route('/')
 def index():
