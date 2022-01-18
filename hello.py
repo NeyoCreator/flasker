@@ -83,6 +83,12 @@ class PostForm(FlaskForm):
     slug=StringField("SlugFied",validators=[DataRequired()])
     submit=SubmitField("Submit")
 
+#Post View
+@app.route('/posts/<int:id>')
+def post(id):
+    post=Posts.query.get_or_404(id)
+    return render_template("post.html",post=post)
+
 #Post Page
 @app.route('/posts')
 def posts():

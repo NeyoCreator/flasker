@@ -7,25 +7,17 @@
       </div>
     {% endfor %}
 
-    <h1>Blog Posts</h1>
+    <h1>Blog Post</h1>
     <br/>
-    {% for post in posts %}
+
     <div class="shadow p-4 mb-5 bg-body rounded">
       <h2>{{ post.title}}</h2>
       <small>
-      By: {{ post.author}}
-      <br/>
+      By: {{ post.author}} <br/>
       
-      {{ post.content}}
-      <br/>
-      {{ post.date_posted}}
-      <br/>
-      
-      
-      <br/>
-      <a href="{{ url_for('post',id=post.id) }}" class="btn btn-outline-secondary">View Post</a>
-      <br/>
+      {{ post.content}}  <br/>
+      {{ post.date_posted}} <br/>
     </div>
+    <a href="{{ url_for('posts') }}" class="btn btn-outline-secondary">Back to blog</a>
     </small>
-    {% endfor %}
     {% endblock %}
