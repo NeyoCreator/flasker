@@ -6,3 +6,5 @@ load them to our webpage.These forms are create withinthe python scripts
 -managed to initiate a  database
 -I made comits to the file and what i discovered was that being in different 
 branches affects the import of the application
+#Add to database SQLITE
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
