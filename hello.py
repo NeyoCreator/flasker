@@ -104,16 +104,24 @@ def dashboard():
 
 #Delete Post
 @app.route('/posts/delete/<int:id>')
+@login_required
 def delete_post(id):
     post_to_delete=Posts.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        flash("Deleted Successfully")
-        post=Posts.query.order_by(Posts.date_posted)
-        return render_template('posts.html',post=post)
-    except:
-        flash("There was an error deleting the post!")
+    id = current_user.id
+
+    if id==post_to_delete.poster.id:
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            flash("Deleted Successfully")
+            post=Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html',post=post)
+        except:
+            flash("There was an error deleting the post!")
+            post=Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html',post=post)
+    else:
+        flash("You arent authorized to delete this")
         post=Posts.query.order_by(Posts.date_posted)
         return render_template('posts.html',post=post)
 
@@ -126,7 +134,6 @@ def edit_post(id):
     form=PostForm()
     if form.validate_on_submit():
         post.title=form.title.data
-        #post.authour=form.author.data
         post.content=form.content.data
         post.slug=form.slug.data
         #Update Database
@@ -134,11 +141,16 @@ def edit_post(id):
         db.session.commit()
         flash("Data was edited successfully!")
         return redirect(url_for('post',id=post.id))
-    form.title.data=post.title
-    #form.author.data=post.author
-    form.content.data=post.content
-    form.slug.data=post.slug
-    return render_template('edit_post.html',form=form)
+
+    if current_user==post.poster_id:  
+        form.title.data=post.title
+        form.content.data=post.content
+        form.slug.data=post.slug
+        return render_template('edit_post.html',form=form)
+    else:
+        flash("You Aren't Authorized to Edit This Post")
+        post=Posts.query.order_by(Posts.date_posted)
+        return render_template('posts.html',post=post)
 
 #Post View
 @app.route('/posts/<int:id>')
@@ -174,6 +186,7 @@ def add_post():
         
 #Delete Database Record
 @app.route('/delete/<int:id>')
+@login_required
 def delete(id):
     form=None
     name=UserForm()

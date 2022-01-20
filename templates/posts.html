@@ -21,11 +21,18 @@
       {{ post.date_posted}}
       <br/>
       
+      <br/>
       
-      <br/>
       <a href="{{ url_for('post',id=post.id) }}" class="btn btn-outline-secondary">View Post</a>
+
+      {% if post.poster_id==current_user.id %}
       <a href="{{ url_for('edit_post',id=post.id )}}" class="btn btn-outline-success"> Edit Page</a>
+      <a href="{{ url_for('delete_post',id=post.id )}}" class="btn btn-outline-danger"> Delete Page</a>
+
+      {% endif %}
       <br/>
+
+
     </div>
     </small>
     {% endfor %}
