@@ -41,6 +41,7 @@ class Users(db.Model,UserMixin):
     date_added = db.Column(db.DateTime, default= datetime.utcnow)
     #Password
     password_hash=db.Column(db.String(128))
+    posts=db.relationship('Posts',backref='poster')
 
     @property
     def password(self):
@@ -61,9 +62,11 @@ class Posts(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     title=db.Column(db.String(255))
     content=db.Column(db.Text)
-    author=db.Column(db.String(255))
+    #author=db.Column(db.String(255))
     date_posted=db.Column(db.DateTime, default=datetime.utcnow)
     slug=db.Column(db.String(255))
+    #Foreign Key Links With User Model
+    poster_id=db.Column(db.Integer,db.ForeignKey('users.id'))
 
 #Login Page
 @app.route('/login',methods=['GET','POST'])
@@ -123,7 +126,7 @@ def edit_post(id):
     form=PostForm()
     if form.validate_on_submit():
         post.title=form.title.data
-        post.authour=form.author.data
+        #post.authour=form.author.data
         post.content=form.content.data
         post.slug=form.slug.data
         #Update Database
@@ -132,7 +135,7 @@ def edit_post(id):
         flash("Data was edited successfully!")
         return redirect(url_for('post',id=post.id))
     form.title.data=post.title
-    form.author.data=post.author
+    #form.author.data=post.author
     form.content.data=post.content
     form.slug.data=post.slug
     return render_template('edit_post.html',form=form)
@@ -154,12 +157,12 @@ def posts():
 @app.route('/add-post',methods=['GET','POST'])
 @login_required
 def add_post():
+    poster=current_user.id
     form=PostForm()
     if form.validate_on_submit():
-        post=Posts(title=form.title.data,content=form.content.data,author=form.author.data,slug=form.slug.data)
+        post=Posts(title=form.title.data,content=form.content.data,poster_id=poster,slug=form.slug.data)
         form.title.data=''
         form.content.data=''
-        form.author.data=''
         form.slug.data=''
         #Add Database
         db.session.add(post)
@@ -188,6 +191,7 @@ def delete(id):
         
 #Update Database Record
 @app.route('/update/<int:id>', methods=['POST','GET'])
+@login_required
 def update(id):
     form=UserForm()
     name_to_update=Users.query.get_or_404(id)
